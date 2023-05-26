@@ -1,6 +1,10 @@
 #include <header.h>
-
-// int capacity = (BIN_HEIGHT - distance_2) / BIN_HEIGHT * 100;
+#include <ultra_depan.cpp>
+#include <ultra_atas.cpp>
+#include <serial_print.cpp>
+#include <oled.cpp>
+#include <wifi.cpp>
+#include <firebase.cpp>
 
 void setup()
 {
@@ -9,54 +13,26 @@ void setup()
   pinMode(TRIG_PIN_1, OUTPUT);
   pinMode(ECHO_PIN_1, INPUT);
 
-  // pinMode(TRIG_PIN_2, OUTPUT);
-  // pinMode(ECHO_PIN_2, INPUT);
+  pinMode(TRIG_PIN_2, OUTPUT);
+  pinMode(ECHO_PIN_2, INPUT);
+
+  pinMode(SERVO_PIN, OUTPUT);
 
   servo.attach(SERVO_PIN);
   servo.write(0); // Close the bin
-}
 
-void Open_Bin()
-{
-  servo.write(155);
-}
+  setup_wifi();
+  setup_firebase();
+  setup_oled();
 
-void print_status()
-{
-  Serial.print("Distance Depan: ");
-  Serial.print(distance_1);
-  Serial.println(" cm");
-
-  // Serial.print("Distance Atas: ");
-  // Serial.print(distance_2);
-  // Serial.println(" cm");
-
-  // Serial.print("Capacity: ");
-  // Serial.print(capacity);
-  // Serial.println(" %");
-
-  delay(1000);
+  timeClient.begin();
+  timeClient.update();
+  timeClient.setTimeOffset(25200);
 }
 
 void loop()
 {
-  digitalWrite(TRIG_PIN_1, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG_PIN_1, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG_PIN_1, LOW);
-
-  // digitalWrite(TRIG_PIN_2, LOW);
-  // delayMicroseconds(2);
-  // digitalWrite(TRIG_PIN_2, HIGH);
-  // delayMicroseconds(10);
-  // digitalWrite(TRIG_PIN_2, LOW);
-
-  duration_1 = pulseIn(ECHO_PIN_1, HIGH);
-  distance_1 = duration_1 * SOUND_SPEED / 2;
-
-  // duration_2 = pulseIn(ECHO_PIN_2, HIGH);
-  // distance_2 = duration_2 * SOUND_SPEED / 2;
+  ultrasonic_depan();
 
   if (distance_1 < distance)
   {
@@ -67,5 +43,8 @@ void loop()
     servo.write(0);
   }
 
+  ultrasonic_atas();
   print_status();
+  send24h();
+  realtimeSend();
 }
